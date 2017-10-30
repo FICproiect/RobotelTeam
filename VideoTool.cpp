@@ -1,6 +1,14 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+
+
 //#include <opencv2\highgui.h>
 #include "opencv2/highgui/highgui.hpp"
 //#include <opencv2\cv.h>
@@ -10,7 +18,7 @@ using namespace std;
 using namespace cv;
 //initial min and max HSV filter values.
 //these will be changed using trackbars
-int H_MIN = 141;
+/*int H_MIN = 141;
 int H_MAX = 256;
 int S_MIN = 44;
 int S_MAX = 256;
@@ -37,9 +45,46 @@ const std::string windowName = "Original Image";
 const std::string windowName1 = "HSV Image";
 const std::string windowName2 = "Thresholded Image";
 const std::string windowName3 = "After Morphological Operations";
-const std::string trackbarWindowName = "Trackbars";
+const std::string trackbarWindowName = "Trackbars"; */
 
-
+int giveCommand(char *command){
+	int i;
+	char comanda[100];
+	struct sockaddr_in address;
+    int sock = 0, valread;
+    struct sockaddr_in serv_addr;
+    char buffer[1024] = {0};
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        cout << "\n Socket creation error \n";
+        return -1;
+    }
+  
+    memset(&serv_addr, '0', sizeof(serv_addr));
+  
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(20232);
+      
+    // Convert IPv4 and IPv6 addresses from text to binary form
+    if(inet_pton(AF_INET, "193.226.12.217", &serv_addr.sin_addr)<=0) 
+    {
+        cout << "\nInvalid address/ Address not supported \n" ;
+        return -1;
+    }
+  
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    {
+        //cout << "\nConnection Failed \n";
+        return -1;
+    }
+	for(i=0;i<strlen(command);i++){
+		sprintf(comanda,"%c",command[i]);
+		send(sock ,comanda , strlen(comanda) , 0 );
+		cout << command[i] << "\n" ;
+		usleep(1000000);
+	}
+}
+/*
 void on_mouse(int e, int x, int y, int d, void *ptr)
 {
 	if (e == EVENT_LBUTTONDOWN)
@@ -97,7 +142,9 @@ void drawObject(int x, int y, Mat &frame) {
 	//added 'if' and 'else' statements to prevent
 	//memory errors from writing off the screen (ie. (-25,-25) is not within the window!)
 
-	circle(frame, Point(x, y), 20, Scalar(0, 255, 0), 2);
+	cirVideoTool.cpp
+cloud@cs-vm:~/RobotelTeam$ ls
+cle(frame, Point(x, y), 20, Scalar(0, 255, 0), 2);
 	if (y - 25 > 0)
 		line(frame, Point(x, y), Point(x, y - 25), Scalar(0, 255, 0), 2);
 	else line(frame, Point(x, y), Point(x, 0), Scalar(0, 255, 0), 2);
@@ -182,13 +229,17 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed) {
 		}
 		else putText(cameraFeed, "TOO MUCH NOISE! ADJUST FILTER", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
 	}
-}
+}*/
 int main(int argc, char* argv[])
 {
+	
+	char command[50]="l,f,r,b,f,l,s";
+	giveCommand(command);
+	
 
 	//some boolean variables for different functionality within this
 	//program
-	bool trackObjects = true;
+	/*bool trackObjects = true;
 	bool useMorphOps = true;
 
 	Point p;
@@ -219,7 +270,12 @@ int main(int argc, char* argv[])
 
 
 		//store image to matrix
+		
 		capture.read(cameraFeed);
+		if(cameraFeed.empty()){
+			cout << "Eroare";
+			exit(1);
+		}
 		//convert frame from BGR to HSV colorspace
 		cvtColor(cameraFeed, HSV, COLOR_BGR2HSV);
 		//filter HSV image between values and store filtered image to
@@ -248,7 +304,7 @@ int main(int argc, char* argv[])
 		if (trackObjects)
 			trackFilteredObject(x, y, threshold, cameraFeed);
 		waitKey(30);
-	}
+	}*/
 
 	return 0;
 }
