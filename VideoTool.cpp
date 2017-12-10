@@ -21,17 +21,17 @@ struct robot{
 	int y;
 }robot1,robot2;
 
-int H_MIN = 141;
-int H_MAX = 256;
-int S_MIN = 44;
+int H_MIN = 164;
+int H_MAX = 181;
+int S_MIN = 49;
 int S_MAX = 256;
 int V_MIN = 0;
 int V_MAX = 256;
 
-int H_MIN2 = 12;
-int H_MAX2 = 256;
-int S_MIN2 = 112;
-int S_MAX2 = 131;
+int H_MIN2 = 28;
+int H_MAX2 = 56;
+int S_MIN2 = 49;
+int S_MAX2 = 256;
 int V_MIN2 = 0;
 int V_MAX2 = 256;
 
@@ -234,8 +234,6 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed) {
 }
 int main(int argc, char* argv[])
 {
-	int i;
-	struct robot pozNoua, pozVeche;
 	//some boolean variables for different functionality within this
 	//program
 	bool trackObjects = true;
@@ -265,6 +263,11 @@ int main(int argc, char* argv[])
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT);
 	//start an infinite loop where webcam feed is copied to cameraFeed matrix
 	//all of our operations will be performed within this loop
+	
+	int i;
+	struct robot pozNoua, pozVeche;
+	float pantaDreptei;
+	int toleranta = 15;
 
 
 
@@ -299,15 +302,6 @@ int main(int argc, char* argv[])
 			trackFilteredObject(robot1.x, robot1.y, threshold, cameraFeed);
 			trackFilteredObject(robot2.x, robot2.y, threshold2, cameraFeed);
 		}
-		if(i==1){
-			pozVeche = robot2;
-			giveCommand("fs");			
-		}
-		else{
-			pozNoua= robot2;
-			
-			
-		}
 
 		//show frames
 		imshow(windowName2, threshold);
@@ -317,6 +311,38 @@ int main(int argc, char* argv[])
 		//delay 30ms so that screen can refresh.
 		//image will not appear without this waitKey() command
 		waitKey(30);
+		
+		if(i==1){
+			pozVeche = robot2;
+			giveCommand("fs");			
+		}
+		else{
+			pozNoua= robot2;
+			pantaDreptei = (float)(pozNoua.y - pozVeche.y) / (float) (pozNoua.x - pozVeche.x)
+			if(pozVeche.x!=pozNoua.x || pozVeche.y!=pozNoua.y){ //verific daca s-a miscat robotul
+				disNoua=sqrt((pozNoua.x-robot1.x)^2+(pozNoua.y-robot1.y)^2);
+				disVeche=sqrt((pozVeche.x-robot1.x)^2+(pozVeche.y-robot1.y)^2);
+			if(disNoua>disVeche){
+				if(robot1.y>m*(robot2.x-pozNoua.x) +pozNoua.y+toleranta){
+					giveCommand("l");
+				}
+				else if(robot2.y<=m*(robot2.x-pozNoua.x) +pozNoua.y-toleranta){
+					giveCommand("r");
+				}
+			}
+			else{
+				if(robot1.y>m*(robot2.x-pozNoua.x) +pozNoua.y+toleranta){
+					giveCommand("rf");
+				}
+			else if(robot2.y<m*(robot2.x-pozNoua.x) +pozNoua.y-toleranta){
+				giveCommand("lf");
+			}
+			else {
+				giveCommand("ff");
+			}
+			}
+			}
+		}
 		}
 	}
 	
