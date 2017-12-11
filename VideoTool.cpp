@@ -77,7 +77,7 @@ int giveCommand(char *command){
   
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
-        //cout << "\nConnection Failed \n";
+        cout << "\nConnection Failed \n";
         return -1;
     }
 	for(i=0;i<strlen(command);i++){
@@ -268,6 +268,7 @@ int main(int argc, char* argv[])
 	struct robot pozNoua, pozVeche;
 	float pantaDreptei;
 	int toleranta = 15;
+	float disVeche,disNoua;
 
 
 
@@ -318,27 +319,27 @@ int main(int argc, char* argv[])
 		}
 		else{
 			pozNoua= robot2;
-			pantaDreptei = (float)(pozNoua.y - pozVeche.y) / (float) (pozNoua.x - pozVeche.x)
+			pantaDreptei = (float)(pozNoua.y - pozVeche.y) / (float) (pozNoua.x - pozVeche.x);
 			if(pozVeche.x!=pozNoua.x || pozVeche.y!=pozNoua.y){ //verific daca s-a miscat robotul
 				disNoua=sqrt((pozNoua.x-robot1.x)^2+(pozNoua.y-robot1.y)^2);
 				disVeche=sqrt((pozVeche.x-robot1.x)^2+(pozVeche.y-robot1.y)^2);
 			if(disNoua>disVeche){
-				if(robot1.y>m*(robot2.x-pozNoua.x) +pozNoua.y+toleranta){
-					giveCommand("l");
+				if(robot1.y>pantaDreptei*(robot2.x-pozNoua.x) +pozNoua.y+toleranta){
+					giveCommand("bls");
 				}
-				else if(robot2.y<=m*(robot2.x-pozNoua.x) +pozNoua.y-toleranta){
-					giveCommand("r");
+				else if(robot2.y<=pantaDreptei*(robot2.x-pozNoua.x) +pozNoua.y-toleranta){
+					giveCommand("brs");
 				}
 			}
 			else{
-				if(robot1.y>m*(robot2.x-pozNoua.x) +pozNoua.y+toleranta){
-					giveCommand("rf");
+				if(robot1.y>pantaDreptei*(robot2.x-pozNoua.x) +pozNoua.y+toleranta){
+					giveCommand("rfs");
 				}
-			else if(robot2.y<m*(robot2.x-pozNoua.x) +pozNoua.y-toleranta){
-				giveCommand("lf");
+			else if(robot2.y<pantaDreptei*(robot2.x-pozNoua.x) +pozNoua.y-toleranta){
+				giveCommand("lfs");
 			}
 			else {
-				giveCommand("ff");
+				giveCommand("ffs");
 			}
 			}
 			}
